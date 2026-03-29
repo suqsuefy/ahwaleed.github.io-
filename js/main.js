@@ -4,6 +4,83 @@
 
 'use strict';
 
+/* ---- Storage keys (shared with admin panel) ---- */
+var AW_KEYS = {
+  works   : 'aw_works',
+  requests: 'aw_requests',
+  stats   : 'aw_stats',
+  emailjs : 'aw_emailjs',
+};
+
+function awLoad(key, def) {
+  try {
+    var v = localStorage.getItem(key);
+    return v ? JSON.parse(v) : def;
+  } catch (e) { return def; }
+}
+
+function awSave(key, val) {
+  try { localStorage.setItem(key, JSON.stringify(val)); } catch (e) {}
+}
+
+function awUID() {
+  return Math.random().toString(36).slice(2, 10) + Date.now().toString(36);
+}
+
+/* ---- Render works grid from localStorage ---- */
+(function () {
+  var grid = document.querySelector('.works-grid');
+  if (!grid) return;
+
+  function renderWorks() {
+    var works = awLoad(AW_KEYS.works, null);
+    if (!works || !works.length) return; // keep static HTML if no data
+
+    grid.innerHTML = works.map(function (w, i) {
+      var delay = (i % 6) * 100;
+      var cat   = w.category || 'creative';
+      var icon  = w.icon || 'fa-film';
+      var link  = w.link && w.link !== '#' ? w.link : '#';
+      var rel   = link !== '#' ? 'noopener noreferrer' : '';
+      var target = link !== '#' ? '_blank' : '_self';
+      return '<div class="work-card" data-category="' + cat + '" data-aos="zoom-in" data-aos-delay="' + delay + '">'
+        + '<div class="work-thumb">'
+        +   '<div class="work-thumb-placeholder ' + cat + '"><i class="fa-solid ' + escHtml(icon) + '"></i></div>'
+        +   '<div class="work-overlay">'
+        +     '<a href="' + escHtml(link) + '" class="work-play" aria-label="مشاهدة" target="' + target + '" rel="' + rel + '">'
+        +       '<i class="fa-solid fa-circle-play"></i>'
+        +     '</a>'
+        +   '</div>'
+        + '</div>'
+        + '<div class="work-info">'
+        +   '<span class="work-tag">' + escHtml(w.tag || '') + '</span>'
+        +   '<h4>' + escHtml(w.title || '') + '</h4>'
+        +   '<p>' + escHtml(w.desc || '') + '</p>'
+        + '</div>'
+        + '</div>';
+    }).join('');
+  }
+
+  renderWorks();
+})();
+
+/* ---- Render stats from localStorage ---- */
+(function () {
+  var numbers = document.querySelectorAll('.stat-number[data-target]');
+  if (!numbers.length) return;
+  var stats = awLoad(AW_KEYS.stats, null);
+  if (!stats || !stats.length) return;
+  numbers.forEach(function (el, i) {
+    if (stats[i]) {
+      el.setAttribute('data-target', stats[i].target);
+    }
+  });
+  var labels = document.querySelectorAll('.stat-label');
+  labels.forEach(function (el, i) {
+    if (stats[i]) el.textContent = stats[i].label;
+  });
+})();
+
 /* ---- Navbar scroll effect ---- */
 (function () {
   const navbar = document.getElementById('navbar');
@@ -225,46 +302,98 @@
   autoTimer = setInterval(() => goToRTL(current + 1), 5000);
 })();
 
-/* ---- Contact form ---- */
+/* ---- Contact form — EmailJS + localStorage storage ---- */
 (function () {
-  const form    = document.getElementById('contactForm');
-  const success = document.getElementById('formSuccess');
+  var form    = document.getElementById('contactForm');
+  var success = document.getElementById('formSuccess');
   if (!form) return;
+
+  // Initialize EmailJS once on load if configured
+  function initEmailJS() {
+    var ejsCfg = awLoad(AW_KEYS.emailjs, {});
+    if (ejsCfg.publicKey && typeof emailjs !== 'undefined') {
+      emailjs.init(ejsCfg.publicKey);
+    }
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initEmailJS);
+  } else {
+    initEmailJS();
+  }
 
   form.addEventListener('submit', function (e) {
     e.preventDefault();
 
-    const name    = form.querySelector('#name').value.trim();
-    const email   = form.querySelector('#email').value.trim();
-    const message = form.querySelector('#message').value.trim();
+    var name    = form.querySelector('#name').value.trim();
+    var email   = form.querySelector('#email').value.trim();
+    var service = form.querySelector('#service') ? form.querySelector('#service').value : '';
+    var message = form.querySelector('#message').value.trim();
 
     if (!name || !email || !message) {
-      // Simple shake animation on missing fields
-      [form.querySelector('#name'), form.querySelector('#email'), form.querySelector('#message')].forEach(field => {
+      [form.querySelector('#name'), form.querySelector('#email'), form.querySelector('#message')].forEach(function (field) {
         if (!field.value.trim()) {
           field.style.borderColor = '#e63946';
-          field.addEventListener('input', () => { field.style.borderColor = ''; }, { once: true });
+          field.addEventListener('input', function () { field.style.borderColor = ''; }, { once: true });
         }
       });
       return;
     }
 
-    // Simulate successful send (replace with real backend/EmailJS as needed)
-    const submitBtn = form.querySelector('[type="submit"]');
+    var submitBtn = form.querySelector('[type="submit"]');
     submitBtn.disabled = true;
     submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جارٍ الإرسال...';
 
-    setTimeout(() => {
+    // Save to localStorage so admin can view it
+    var requests = awLoad(AW_KEYS.requests, []);
+    requests.push({
+      id     : awUID(),
+      name   : name,
+      email  : email,
+      service: service,
+      message: message,
+      date   : new Date().toISOString(),
+      read   : false,
+    });
+    awSave(AW_KEYS.requests, requests);
+
+    // Try EmailJS if configured
+    var ejsCfg = awLoad(AW_KEYS.emailjs, {});
+    var hasEmailJS = ejsCfg.publicKey && ejsCfg.serviceId && ejsCfg.templateId
+      && typeof emailjs !== 'undefined';
+
+    function onDone() {
       form.reset();
       submitBtn.disabled = false;
       submitBtn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> إرسال الرسالة';
       if (success) {
         success.classList.add('show');
-        setTimeout(() => success.classList.remove('show'), 5000);
+        setTimeout(function () { success.classList.remove('show'); }, 5000);
       }
-    }, 1200);
+    }
+
+    if (hasEmailJS) {
+      emailjs.send(ejsCfg.serviceId, ejsCfg.templateId, {
+        from_name   : name,
+        from_email  : email,
+        service_type: service,
+        message     : message,
+      }).then(onDone, onDone);
+    } else {
+      setTimeout(onDone, 800);
+    }
   });
 })();
+
+/* ---- HTML escape helper (used by works renderer) ---- */
+function escHtml(str) {
+  if (!str) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
 
 /* ---- Back to top ---- */
 (function () {

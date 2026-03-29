@@ -1,0 +1,910 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>لوحة التحكم | أحمد وليد</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/admin.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
+</head>
+<body>
+
+<!-- ==================== LOGIN SCREEN ==================== -->
+<div id="loginScreen">
+  <div class="login-card">
+    <div class="login-logo">AW<span class="dot">.</span></div>
+    <p class="login-subtitle">لوحة تحكم أحمد وليد</p>
+    <div class="form-group">
+      <label for="loginPassword">كلمة المرور</label>
+      <input type="password" id="loginPassword" placeholder="أدخل كلمة المرور" />
+    </div>
+    <p class="login-error" id="loginError"><i class="fa-solid fa-circle-exclamation"></i> كلمة المرور غير صحيحة</p>
+    <button class="btn-login" id="loginBtn">
+      <i class="fa-solid fa-right-to-bracket"></i> دخول
+    </button>
+    <!-- Default password: admin123 — change immediately from Settings after first login -->
+  </div>
+</div>
+
+<!-- ==================== ADMIN APP ==================== -->
+<div id="adminApp">
+
+  <!-- Sidebar -->
+  <aside class="admin-sidebar" id="adminSidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-logo">AW<span class="dot">.</span></div>
+      <div class="sidebar-subtitle">لوحة التحكم</div>
+    </div>
+    <nav class="sidebar-nav">
+      <p class="nav-section-label">الرئيسية</p>
+      <div class="sidebar-nav-item active" data-panel="dashboard">
+        <i class="fa-solid fa-gauge-high"></i> لوحة المعلومات
+      </div>
+
+      <p class="nav-section-label">المحتوى</p>
+      <div class="sidebar-nav-item" data-panel="works">
+        <i class="fa-solid fa-film"></i> الأعمال
+      </div>
+      <div class="sidebar-nav-item" data-panel="requests">
+        <i class="fa-solid fa-inbox"></i> الطلبات والرسائل
+        <span class="nav-badge" id="unreadBadge" style="display:none">0</span>
+      </div>
+
+      <p class="nav-section-label">الإعدادات</p>
+      <div class="sidebar-nav-item" data-panel="stats">
+        <i class="fa-solid fa-chart-bar"></i> الإحصائيات
+      </div>
+      <div class="sidebar-nav-item" data-panel="settings">
+        <i class="fa-solid fa-gear"></i> الإعدادات
+      </div>
+    </nav>
+    <div class="sidebar-footer">
+      <a href="index.html" target="_blank" class="site-link-banner" style="margin-bottom:10px;display:inline-flex;">
+        <i class="fa-solid fa-arrow-up-right-from-square"></i> عرض الموقع
+      </a>
+      <button class="btn-logout" id="logoutBtn">
+        <i class="fa-solid fa-right-from-bracket"></i> تسجيل الخروج
+      </button>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="admin-main">
+
+    <!-- Top bar -->
+    <div class="admin-topbar">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <button class="mobile-sidebar-toggle" id="mobileSidebarToggle">
+          <i class="fa-solid fa-bars"></i>
+        </button>
+        <h1 class="admin-page-title" id="pageTitle">لوحة <span>المعلومات</span></h1>
+      </div>
+      <div class="topbar-actions">
+        <a href="index.html" target="_blank" class="site-link-banner">
+          <i class="fa-solid fa-arrow-up-right-from-square"></i>
+          <span class="hide-sm">عرض الموقع</span>
+        </a>
+      </div>
+    </div>
+
+    <!-- ======== PANEL: DASHBOARD ======== -->
+    <div class="admin-panel active" id="panel-dashboard">
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-icon gold"><i class="fa-solid fa-film"></i></div>
+          <div class="stat-info">
+            <div class="stat-value" id="dash-works-count">0</div>
+            <div class="stat-label">إجمالي الأعمال</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon red"><i class="fa-solid fa-envelope"></i></div>
+          <div class="stat-info">
+            <div class="stat-value" id="dash-requests-count">0</div>
+            <div class="stat-label">إجمالي الطلبات</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon blue"><i class="fa-solid fa-envelope-open"></i></div>
+          <div class="stat-info">
+            <div class="stat-value" id="dash-unread-count">0</div>
+            <div class="stat-label">رسائل غير مقروءة</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon green"><i class="fa-solid fa-star"></i></div>
+          <div class="stat-info">
+            <div class="stat-value" id="dash-latest-request">—</div>
+            <div class="stat-label">آخر طلب وصل</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Latest requests preview -->
+      <div class="admin-table-wrap">
+        <div class="admin-table-header">
+          <span class="admin-table-title"><i class="fa-solid fa-clock-rotate-left" style="color:var(--clr-gold);margin-left:8px;"></i> آخر الطلبات</span>
+          <button class="btn btn-outline btn-sm" onclick="showPanel('requests')">عرض الكل</button>
+        </div>
+        <div id="dashRequestsList" style="padding:0 4px 8px;">
+          <div class="empty-state"><i class="fa-solid fa-inbox"></i><p>لا توجد طلبات بعد</p></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ======== PANEL: WORKS ======== -->
+    <div class="admin-panel" id="panel-works">
+      <div class="admin-table-wrap">
+        <div class="admin-table-header">
+          <span class="admin-table-title"><i class="fa-solid fa-film" style="color:var(--clr-gold);margin-left:8px;"></i> قائمة الأعمال</span>
+          <button class="btn btn-primary btn-sm" id="addWorkBtn">
+            <i class="fa-solid fa-plus"></i> إضافة عمل
+          </button>
+        </div>
+        <table class="admin-table" id="worksTable">
+          <thead>
+            <tr>
+              <th>العمل</th>
+              <th>النوع</th>
+              <th>الوصف</th>
+              <th>الرابط</th>
+              <th>إجراءات</th>
+            </tr>
+          </thead>
+          <tbody id="worksTbody">
+            <!-- rows inserted by JS -->
+          </tbody>
+        </table>
+        <div class="empty-state" id="worksEmpty" style="display:none;">
+          <i class="fa-solid fa-film"></i><p>لا توجد أعمال مضافة بعد</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ======== PANEL: REQUESTS ======== -->
+    <div class="admin-panel" id="panel-requests">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+        <div style="font-size:0.9rem;color:var(--clr-text-dim);">
+          الطلبات والرسائل المُستلمة من نموذج التواصل
+        </div>
+        <button class="btn btn-outline btn-sm" id="markAllReadBtn">
+          <i class="fa-solid fa-check-double"></i> تحديد الكل كمقروء
+        </button>
+      </div>
+      <div class="requests-list" id="requestsList">
+        <div class="empty-state" style="background:var(--clr-card);border:1px solid var(--clr-border);border-radius:var(--radius);padding:48px;">
+          <i class="fa-solid fa-inbox"></i><p>لا توجد رسائل بعد</p>
+          <p style="font-size:0.82rem;color:var(--clr-text-mute);margin-top:8px;">ستظهر رسائل نموذج التواصل هنا تلقائياً</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ======== PANEL: STATS ======== -->
+    <div class="admin-panel" id="panel-stats">
+      <div class="admin-table-wrap" style="padding:24px 28px;">
+        <p style="font-size:0.88rem;color:var(--clr-text-dim);margin-bottom:20px;">
+          عدّل الأرقام والتسميات التي تظهر في شريط الإحصائيات في الصفحة الرئيسية.
+        </p>
+        <div id="statsForm"></div>
+        <div style="margin-top:20px;">
+          <button class="btn btn-primary" id="saveStatsBtn">
+            <i class="fa-solid fa-floppy-disk"></i> حفظ الإحصائيات
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ======== PANEL: SETTINGS ======== -->
+    <div class="admin-panel" id="panel-settings">
+      <div class="settings-grid">
+
+        <!-- Change Password -->
+        <div class="settings-card">
+          <div class="settings-card-title">
+            <i class="fa-solid fa-lock"></i> تغيير كلمة المرور
+          </div>
+          <div class="form-group">
+            <label>كلمة المرور الحالية</label>
+            <input type="password" id="currentPass" placeholder="ادخل كلمة المرور الحالية" />
+          </div>
+          <div class="form-group">
+            <label>كلمة المرور الجديدة</label>
+            <input type="password" id="newPass" placeholder="كلمة مرور جديدة (6 أحرف على الأقل)" />
+          </div>
+          <div class="form-group">
+            <label>تأكيد كلمة المرور الجديدة</label>
+            <input type="password" id="confirmPass" placeholder="أعد كتابة كلمة المرور الجديدة" />
+          </div>
+          <button class="btn btn-primary" id="changePassBtn">
+            <i class="fa-solid fa-key"></i> حفظ كلمة المرور
+          </button>
+        </div>
+
+        <!-- EmailJS Config -->
+        <div class="settings-card">
+          <div class="settings-card-title">
+            <i class="fa-solid fa-envelope"></i> إعدادات البريد الإلكتروني (EmailJS)
+          </div>
+          <p style="font-size:0.82rem;color:var(--clr-text-dim);margin-bottom:16px;line-height:1.6;">
+            للحصول على هذه البيانات، سجّل في <a href="https://www.emailjs.com" target="_blank" style="color:var(--clr-gold);">EmailJS.com</a>
+            مجاناً ثم أنشئ خدمة بريدية وقالب رسالة.
+          </p>
+          <div class="form-group">
+            <label>Public Key (User ID)</label>
+            <input type="text" id="ejs_pubkey" placeholder="مثال: user_XXXXXXXXXX" />
+          </div>
+          <div class="form-group">
+            <label>Service ID</label>
+            <input type="text" id="ejs_service" placeholder="مثال: service_XXXXXXX" />
+          </div>
+          <div class="form-group">
+            <label>Template ID</label>
+            <input type="text" id="ejs_template" placeholder="مثال: template_XXXXXXX" />
+          </div>
+          <button class="btn btn-primary" id="saveEmailJSBtn">
+            <i class="fa-solid fa-floppy-disk"></i> حفظ إعدادات البريد
+          </button>
+        </div>
+
+        <!-- Reset data -->
+        <div class="settings-card">
+          <div class="settings-card-title">
+            <i class="fa-solid fa-triangle-exclamation"></i> إدارة البيانات
+          </div>
+          <p style="font-size:0.82rem;color:var(--clr-text-dim);margin-bottom:16px;line-height:1.6;">
+            احذر: حذف البيانات لا يمكن التراجع عنه.
+          </p>
+          <div style="display:flex;flex-direction:column;gap:10px;">
+            <button class="btn btn-danger" id="clearRequestsBtn">
+              <i class="fa-solid fa-trash-can"></i> حذف جميع الرسائل
+            </button>
+            <button class="btn btn-danger" id="clearWorksBtn">
+              <i class="fa-solid fa-trash-can"></i> حذف جميع الأعمال
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- ==================== MODAL: ADD / EDIT WORK ==================== -->
+<div class="modal-backdrop" id="workModal">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title" id="workModalTitle">إضافة عمل جديد</span>
+      <button class="modal-close" id="closeWorkModal"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="workId" />
+      <div class="form-row">
+        <div class="form-group">
+          <label>عنوان العمل *</label>
+          <input type="text" id="wTitle" placeholder="مثال: مسلسل الأيام الأخيرة" required />
+        </div>
+        <div class="form-group">
+          <label>التصنيف *</label>
+          <select id="wCategory">
+            <option value="series">مسلسلات</option>
+            <option value="film">أفلام</option>
+            <option value="creative">إبداعي</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>التاق / النوع</label>
+          <input type="text" id="wTag" placeholder="مثال: مسلسل دراما" />
+        </div>
+        <div class="form-group">
+          <label>الأيقونة (Font Awesome)</label>
+          <select id="wIcon">
+            <option value="fa-tv">📺 تلفزيون</option>
+            <option value="fa-film">🎞️ فيلم</option>
+            <option value="fa-clapperboard">🎬 كلابورد</option>
+            <option value="fa-video">🎥 فيديو</option>
+            <option value="fa-lightbulb">💡 إبداع</option>
+            <option value="fa-wand-magic-sparkles">✨ سحر</option>
+            <option value="fa-star">⭐ نجمة</option>
+            <option value="fa-play">▶️ تشغيل</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>الوصف</label>
+        <input type="text" id="wDesc" placeholder="مثال: 30 حلقة · تحرير كامل · 2024" />
+      </div>
+      <div class="form-group">
+        <label>رابط المشاهدة</label>
+        <input type="url" id="wLink" placeholder="https://youtube.com/watch?v=..." />
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" id="cancelWorkModal">إلغاء</button>
+      <button class="btn btn-primary" id="saveWorkBtn">
+        <i class="fa-solid fa-floppy-disk"></i> حفظ
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== MODAL: CONFIRM DELETE ==================== -->
+<div class="modal-backdrop" id="confirmModal">
+  <div class="modal" style="max-width:420px;">
+    <div class="modal-header">
+      <span class="modal-title">تأكيد الحذف</span>
+      <button class="modal-close" id="closeConfirmModal"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="modal-body">
+      <p class="confirm-message" id="confirmMessage">هل أنت متأكد من رغبتك في الحذف؟ لا يمكن التراجع عن هذه العملية.</p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" id="cancelConfirm">إلغاء</button>
+      <button class="btn btn-danger" id="confirmDeleteBtn">
+        <i class="fa-solid fa-trash-can"></i> حذف
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== TOAST CONTAINER ==================== -->
+<div class="toast-container" id="toastContainer"></div>
+
+<!-- ==================== SCRIPTS ==================== -->
+<script>
+'use strict';
+
+/* ============================================================
+   STORAGE KEYS
+   ============================================================ */
+const KEYS = {
+  password : 'aw_admin_password',
+  works    : 'aw_works',
+  requests : 'aw_requests',
+  stats    : 'aw_stats',
+  emailjs  : 'aw_emailjs',
+};
+
+/* ============================================================
+   DEFAULT DATA
+   ============================================================ */
+const DEFAULT_WORKS = [
+  { id: uid(), category: 'series',   tag: 'مسلسل دراما',    title: 'مسلسل الأيام الأخيرة',  desc: '30 حلقة · تحرير كامل · 2024',           icon: 'fa-tv',                  link: '#' },
+  { id: uid(), category: 'film',     tag: 'فيلم روائي',      title: 'فيلم ما وراء النهر',     desc: 'فيلم قصير · تصحيح ألوان · 2023',        icon: 'fa-clapperboard',         link: '#' },
+  { id: uid(), category: 'creative', tag: 'يوتيوب',          title: 'وثائقي رحلة الإبداع',    desc: 'سلسلة وثائقية · 12 حلقة · 2024',        icon: 'fa-lightbulb',            link: '#' },
+  { id: uid(), category: 'series',   tag: 'مسلسل كوميدي',   title: 'مسلسل ليالي بغداد',      desc: '15 حلقة · مونتاج وصوت · 2023',           icon: 'fa-film',                 link: '#' },
+  { id: uid(), category: 'film',     tag: 'فيلم إعلاني',     title: 'حملة إعلانية رمضان',     desc: 'سلسلة إعلانات · موشن جرافيك · 2024',    icon: 'fa-video',                link: '#' },
+  { id: uid(), category: 'creative', tag: 'محتوى إبداعي',   title: 'بودكاست المبدعون',        desc: 'تحرير مرئي · موشن جرافيك · 2024',        icon: 'fa-wand-magic-sparkles',  link: '#' },
+];
+
+const DEFAULT_STATS = [
+  { id: 'stat-0', target: 120, label: 'مشروع مكتمل' },
+  { id: 'stat-1', target: 8,   label: 'سنوات خبرة' },
+  { id: 'stat-2', target: 45,  label: 'عميل راضٍ' },
+  { id: 'stat-3', target: 30,  label: 'جائزة وتكريم' },
+];
+
+/* ============================================================
+   HELPERS
+   ============================================================ */
+function uid() {
+  return Math.random().toString(36).slice(2, 10) + Date.now().toString(36);
+}
+
+function load(key, def) {
+  try {
+    const v = localStorage.getItem(key);
+    return v ? JSON.parse(v) : def;
+  } catch { return def; }
+}
+
+function save(key, val) {
+  localStorage.setItem(key, JSON.stringify(val));
+}
+
+function toast(msg, type = 'success') {
+  const c = document.getElementById('toastContainer');
+  const el = document.createElement('div');
+  el.className = `toast ${type}`;
+  const icons = { success: 'fa-circle-check', error: 'fa-circle-xmark', info: 'fa-circle-info' };
+  el.innerHTML = `<i class="fa-solid ${icons[type] || icons.success}"></i><span>${msg}</span>`;
+  c.appendChild(el);
+  setTimeout(() => el.remove(), 3200);
+}
+
+function formatDate(iso) {
+  if (!iso) return '—';
+  const d = new Date(iso);
+  return d.toLocaleDateString('ar-EG', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+}
+
+const SERVICE_LABELS = {
+  series: 'تحرير مسلسل', film: 'مونتاج فيلم', creative: 'محتوى إبداعي',
+  color: 'تصحيح ألوان', sound: 'تصميم صوت', other: 'أخرى'
+};
+
+/* ============================================================
+   AUTH
+   ============================================================ */
+(function initAuth() {
+  const loginScreen = document.getElementById('loginScreen');
+  const adminApp    = document.getElementById('adminApp');
+  const loginBtn    = document.getElementById('loginBtn');
+  const loginError  = document.getElementById('loginError');
+  const passInput   = document.getElementById('loginPassword');
+  const logoutBtn   = document.getElementById('logoutBtn');
+
+  function getPass() {
+    return localStorage.getItem(KEYS.password) || 'admin123';
+  }
+
+  function doLogin() {
+    const entered = passInput.value;
+    if (entered === getPass()) {
+      loginScreen.style.display = 'none';
+      adminApp.classList.add('visible');
+      loginError.classList.remove('show');
+      initApp();
+    } else {
+      loginError.classList.add('show');
+      passInput.value = '';
+      passInput.focus();
+    }
+  }
+
+  loginBtn.addEventListener('click', doLogin);
+  passInput.addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+
+  logoutBtn.addEventListener('click', () => {
+    adminApp.classList.remove('visible');
+    loginScreen.style.display = 'flex';
+    passInput.value = '';
+  });
+})();
+
+/* ============================================================
+   APP INIT
+   ============================================================ */
+function initApp() {
+  // ensure default works exist if storage is empty
+  if (!localStorage.getItem(KEYS.works)) {
+    save(KEYS.works, DEFAULT_WORKS);
+  }
+  if (!localStorage.getItem(KEYS.stats)) {
+    save(KEYS.stats, DEFAULT_STATS);
+  }
+
+  loadDashboard();
+  loadWorks();
+  loadRequests();
+  loadStatsForm();
+  loadEmailJSSettings();
+  updateBadge();
+}
+
+/* ============================================================
+   NAVIGATION
+   ============================================================ */
+const PANEL_TITLES = {
+  dashboard : 'لوحة <span>المعلومات</span>',
+  works     : 'إدارة <span>الأعمال</span>',
+  requests  : 'الطلبات <span>والرسائل</span>',
+  stats     : 'إدارة <span>الإحصائيات</span>',
+  settings  : '<span>الإعدادات</span>',
+};
+
+function showPanel(name) {
+  document.querySelectorAll('.admin-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.sidebar-nav-item').forEach(i => i.classList.remove('active'));
+  document.getElementById('panel-' + name).classList.add('active');
+  document.querySelector(`.sidebar-nav-item[data-panel="${name}"]`).classList.add('active');
+  document.getElementById('pageTitle').innerHTML = PANEL_TITLES[name] || name;
+  // close mobile sidebar
+  document.getElementById('adminSidebar').classList.remove('open');
+
+  if (name === 'dashboard') loadDashboard();
+  if (name === 'requests')  loadRequests();
+  if (name === 'works')     loadWorks();
+}
+
+document.querySelectorAll('.sidebar-nav-item').forEach(item => {
+  item.addEventListener('click', () => showPanel(item.dataset.panel));
+});
+
+document.getElementById('mobileSidebarToggle').addEventListener('click', () => {
+  document.getElementById('adminSidebar').classList.toggle('open');
+});
+
+/* ============================================================
+   DASHBOARD
+   ============================================================ */
+function loadDashboard() {
+  const works    = load(KEYS.works, []);
+  const requests = load(KEYS.requests, []);
+  const unread   = requests.filter(r => !r.read).length;
+
+  document.getElementById('dash-works-count').textContent    = works.length;
+  document.getElementById('dash-requests-count').textContent = requests.length;
+  document.getElementById('dash-unread-count').textContent   = unread;
+
+  const latest = requests[requests.length - 1];
+  document.getElementById('dash-latest-request').textContent = latest
+    ? latest.name.slice(0, 10) + (latest.name.length > 10 ? '…' : '')
+    : '—';
+
+  const container = document.getElementById('dashRequestsList');
+  const recent = [...requests].reverse().slice(0, 3);
+  if (!recent.length) {
+    container.innerHTML = '<div class="empty-state"><i class="fa-solid fa-inbox"></i><p>لا توجد طلبات بعد</p></div>';
+    return;
+  }
+  container.innerHTML = recent.map(r => `
+    <div style="display:flex;align-items:center;gap:14px;padding:14px 20px;border-bottom:1px solid var(--clr-border);">
+      <div style="flex:1;min-width:0;">
+        <div style="font-weight:700;font-size:0.9rem;">${esc(r.name)} ${r.read ? '' : '<span class="unread-dot" style="margin-right:6px;"></span>'}</div>
+        <div style="font-size:0.8rem;color:var(--clr-text-dim);margin-top:2px;">${esc(r.email)}</div>
+      </div>
+      <div style="font-size:0.78rem;color:var(--clr-text-mute);flex-shrink:0;">${formatDate(r.date)}</div>
+    </div>
+  `).join('');
+}
+
+/* ============================================================
+   WORKS
+   ============================================================ */
+function loadWorks() {
+  const works  = load(KEYS.works, []);
+  const tbody  = document.getElementById('worksTbody');
+  const empty  = document.getElementById('worksEmpty');
+  const table  = document.getElementById('worksTable');
+
+  if (!works.length) {
+    tbody.innerHTML = '';
+    table.style.display = 'none';
+    empty.style.display = 'block';
+    return;
+  }
+  table.style.display = '';
+  empty.style.display = 'none';
+  tbody.innerHTML = works.map(w => `
+    <tr>
+      <td>
+        <div style="display:flex;align-items:center;gap:12px;">
+          <div class="work-icon-cell ${w.category}"><i class="fa-solid ${esc(w.icon)}"></i></div>
+          <div>
+            <div style="font-weight:700;font-size:0.9rem;">${esc(w.title)}</div>
+            <div style="font-size:0.78rem;color:var(--clr-text-dim);">${esc(w.tag)}</div>
+          </div>
+        </div>
+      </td>
+      <td><span class="category-badge ${w.category}">${catLabel(w.category)}</span></td>
+      <td style="color:var(--clr-text-dim);font-size:0.85rem;">${esc(w.desc)}</td>
+      <td>
+        ${w.link && w.link !== '#'
+          ? `<a href="${esc(w.link)}" target="_blank" rel="noopener" style="color:var(--clr-gold);font-size:0.82rem;"><i class="fa-solid fa-arrow-up-right-from-square"></i> رابط</a>`
+          : '<span style="color:var(--clr-text-mute);font-size:0.82rem;">—</span>'}
+      </td>
+      <td>
+        <div class="table-actions">
+          <button class="btn btn-outline btn-sm btn-icon" onclick="openEditWork('${w.id}')" title="تعديل">
+            <i class="fa-solid fa-pen"></i>
+          </button>
+          <button class="btn btn-danger btn-sm btn-icon" onclick="deleteWork('${w.id}')" title="حذف">
+            <i class="fa-solid fa-trash-can"></i>
+          </button>
+        </div>
+      </td>
+    </tr>
+  `).join('');
+}
+
+function catLabel(c) {
+  return c === 'series' ? 'مسلسلات' : c === 'film' ? 'أفلام' : 'إبداعي';
+}
+
+// Open work modal for add
+document.getElementById('addWorkBtn').addEventListener('click', () => {
+  document.getElementById('workModalTitle').textContent = 'إضافة عمل جديد';
+  document.getElementById('workId').value = '';
+  ['wTitle','wTag','wDesc','wLink'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('wCategory').value = 'series';
+  document.getElementById('wIcon').value = 'fa-tv';
+  openModal('workModal');
+});
+
+// Open work modal for edit
+function openEditWork(id) {
+  const works = load(KEYS.works, []);
+  const w = works.find(x => x.id === id);
+  if (!w) return;
+  document.getElementById('workModalTitle').textContent = 'تعديل العمل';
+  document.getElementById('workId').value    = w.id;
+  document.getElementById('wTitle').value    = w.title;
+  document.getElementById('wCategory').value = w.category;
+  document.getElementById('wTag').value      = w.tag;
+  document.getElementById('wIcon').value     = w.icon;
+  document.getElementById('wDesc').value     = w.desc;
+  document.getElementById('wLink').value     = w.link;
+  openModal('workModal');
+}
+
+// Save work
+document.getElementById('saveWorkBtn').addEventListener('click', () => {
+  const title    = document.getElementById('wTitle').value.trim();
+  const category = document.getElementById('wCategory').value;
+  const tag      = document.getElementById('wTag').value.trim();
+  const icon     = document.getElementById('wIcon').value;
+  const desc     = document.getElementById('wDesc').value.trim();
+  const link     = document.getElementById('wLink').value.trim() || '#';
+  const id       = document.getElementById('workId').value;
+
+  if (!title) { toast('الرجاء إدخال عنوان العمل', 'error'); return; }
+
+  const works = load(KEYS.works, []);
+  if (id) {
+    const idx = works.findIndex(w => w.id === id);
+    if (idx !== -1) works[idx] = { id, category, tag, title, desc, icon, link };
+    toast('تم تحديث العمل بنجاح ✓');
+  } else {
+    works.push({ id: uid(), category, tag, title, desc, icon, link });
+    toast('تم إضافة العمل بنجاح ✓');
+  }
+  save(KEYS.works, works);
+  closeModal('workModal');
+  loadWorks();
+  loadDashboard();
+});
+
+// Delete work
+let pendingDeleteWorkId = null;
+function deleteWork(id) {
+  const works = load(KEYS.works, []);
+  const w = works.find(x => x.id === id);
+  document.getElementById('confirmMessage').textContent =
+    `هل أنت متأكد من حذف العمل "${w ? w.title : ''}"؟ لا يمكن التراجع عن هذه العملية.`;
+  pendingDeleteWorkId = id;
+  pendingDeleteType = 'work';
+  openModal('confirmModal');
+}
+
+/* ============================================================
+   REQUESTS
+   ============================================================ */
+function loadRequests() {
+  const requests = load(KEYS.requests, []);
+  const container = document.getElementById('requestsList');
+  if (!requests.length) {
+    container.innerHTML = `
+      <div class="empty-state" style="background:var(--clr-card);border:1px solid var(--clr-border);border-radius:var(--radius);padding:48px;">
+        <i class="fa-solid fa-inbox"></i><p>لا توجد رسائل بعد</p>
+        <p style="font-size:0.82rem;color:var(--clr-text-mute);margin-top:8px;">ستظهر رسائل نموذج التواصل هنا تلقائياً</p>
+      </div>`;
+    return;
+  }
+  container.innerHTML = [...requests].reverse().map(r => `
+    <div class="request-card ${r.read ? '' : 'unread'}" id="req-${r.id}">
+      <div class="request-header">
+        <div>
+          <div class="request-sender">${esc(r.name)} ${r.read ? '' : '<span class="unread-dot" style="margin-right:6px;"></span>'}</div>
+          <div class="request-email">${esc(r.email)}</div>
+        </div>
+        <div class="request-meta">
+          <span class="request-service">${esc(SERVICE_LABELS[r.service] || r.service || 'غير محدد')}</span>
+          <span class="request-date">${formatDate(r.date)}</span>
+        </div>
+      </div>
+      <div class="request-body">${esc(r.message)}</div>
+      <div class="request-footer">
+        ${r.read ? '' : `<button class="btn btn-outline btn-sm" onclick="markRead('${r.id}')"><i class="fa-solid fa-check"></i> تحديد كمقروء</button>`}
+        <a href="mailto:${esc(r.email)}" class="btn btn-outline btn-sm">
+          <i class="fa-solid fa-reply"></i> رد بالبريد
+        </a>
+        <button class="btn btn-danger btn-sm" onclick="deleteRequest('${r.id}')">
+          <i class="fa-solid fa-trash-can"></i> حذف
+        </button>
+      </div>
+    </div>
+  `).join('');
+  updateBadge();
+}
+
+function markRead(id) {
+  const requests = load(KEYS.requests, []);
+  const r = requests.find(x => x.id === id);
+  if (r) { r.read = true; save(KEYS.requests, requests); loadRequests(); loadDashboard(); }
+}
+
+document.getElementById('markAllReadBtn').addEventListener('click', () => {
+  const requests = load(KEYS.requests, []);
+  requests.forEach(r => r.read = true);
+  save(KEYS.requests, requests);
+  loadRequests();
+  loadDashboard();
+  toast('تم تحديد جميع الرسائل كمقروءة');
+});
+
+let pendingDeleteRequestId = null;
+function deleteRequest(id) {
+  const requests = load(KEYS.requests, []);
+  const r = requests.find(x => x.id === id);
+  document.getElementById('confirmMessage').textContent =
+    `هل أنت متأكد من حذف رسالة "${r ? r.name : ''}"؟`;
+  pendingDeleteRequestId = id;
+  pendingDeleteType = 'request';
+  openModal('confirmModal');
+}
+
+function updateBadge() {
+  const requests = load(KEYS.requests, []);
+  const unread   = requests.filter(r => !r.read).length;
+  const badge    = document.getElementById('unreadBadge');
+  if (unread > 0) {
+    badge.textContent = unread;
+    badge.style.display = '';
+  } else {
+    badge.style.display = 'none';
+  }
+}
+
+/* ============================================================
+   STATS FORM
+   ============================================================ */
+function loadStatsForm() {
+  const stats   = load(KEYS.stats, DEFAULT_STATS);
+  const form    = document.getElementById('statsForm');
+  form.innerHTML = stats.map((s, i) => `
+    <div class="form-row" style="margin-bottom:12px;">
+      <div class="form-group" style="margin:0;">
+        <label>الرقم #${i + 1}</label>
+        <input type="number" id="stat-target-${i}" value="${s.target}" min="0" max="9999" />
+      </div>
+      <div class="form-group" style="margin:0;">
+        <label>التسمية #${i + 1}</label>
+        <input type="text" id="stat-label-${i}" value="${esc(s.label)}" />
+      </div>
+    </div>
+  `).join('');
+}
+
+document.getElementById('saveStatsBtn').addEventListener('click', () => {
+  const stats = load(KEYS.stats, DEFAULT_STATS);
+  stats.forEach((s, i) => {
+    s.target = parseInt(document.getElementById(`stat-target-${i}`).value) || 0;
+    s.label  = document.getElementById(`stat-label-${i}`).value.trim();
+  });
+  save(KEYS.stats, stats);
+  toast('تم حفظ الإحصائيات بنجاح ✓');
+});
+
+/* ============================================================
+   EMAILJS SETTINGS
+   ============================================================ */
+function loadEmailJSSettings() {
+  const cfg = load(KEYS.emailjs, {});
+  document.getElementById('ejs_pubkey').value   = cfg.publicKey  || '';
+  document.getElementById('ejs_service').value  = cfg.serviceId  || '';
+  document.getElementById('ejs_template').value = cfg.templateId || '';
+}
+
+document.getElementById('saveEmailJSBtn').addEventListener('click', () => {
+  const cfg = {
+    publicKey  : document.getElementById('ejs_pubkey').value.trim(),
+    serviceId  : document.getElementById('ejs_service').value.trim(),
+    templateId : document.getElementById('ejs_template').value.trim(),
+  };
+  save(KEYS.emailjs, cfg);
+  toast('تم حفظ إعدادات البريد الإلكتروني ✓');
+});
+
+/* ============================================================
+   SETTINGS ACTIONS
+   ============================================================ */
+document.getElementById('changePassBtn').addEventListener('click', () => {
+  const current  = document.getElementById('currentPass').value;
+  const newP     = document.getElementById('newPass').value;
+  const confirm  = document.getElementById('confirmPass').value;
+  const stored   = localStorage.getItem(KEYS.password) || 'admin123';
+
+  if (current !== stored) { toast('كلمة المرور الحالية غير صحيحة', 'error'); return; }
+  if (newP.length < 6)    { toast('كلمة المرور الجديدة يجب أن تكون 6 أحرف على الأقل', 'error'); return; }
+  if (newP !== confirm)   { toast('كلمتا المرور غير متطابقتان', 'error'); return; }
+
+  localStorage.setItem(KEYS.password, newP);
+  document.getElementById('currentPass').value = '';
+  document.getElementById('newPass').value     = '';
+  document.getElementById('confirmPass').value = '';
+  toast('تم تغيير كلمة المرور بنجاح ✓');
+});
+
+document.getElementById('clearRequestsBtn').addEventListener('click', () => {
+  document.getElementById('confirmMessage').textContent = 'هل أنت متأكد من حذف جميع الرسائل؟ لا يمكن التراجع عن هذه العملية.';
+  pendingDeleteType = 'all-requests';
+  openModal('confirmModal');
+});
+
+document.getElementById('clearWorksBtn').addEventListener('click', () => {
+  document.getElementById('confirmMessage').textContent = 'هل أنت متأكد من حذف جميع الأعمال؟ سيؤثر ذلك على الصفحة الرئيسية.';
+  pendingDeleteType = 'all-works';
+  openModal('confirmModal');
+});
+
+/* ============================================================
+   CONFIRM MODAL
+   ============================================================ */
+let pendingDeleteType = null;
+
+document.getElementById('confirmDeleteBtn').addEventListener('click', () => {
+  if (pendingDeleteType === 'work' && pendingDeleteWorkId) {
+    const works = load(KEYS.works, []);
+    save(KEYS.works, works.filter(w => w.id !== pendingDeleteWorkId));
+    pendingDeleteWorkId = null;
+    loadWorks();
+    loadDashboard();
+    toast('تم حذف العمل بنجاح', 'info');
+  } else if (pendingDeleteType === 'request' && pendingDeleteRequestId) {
+    const reqs = load(KEYS.requests, []);
+    save(KEYS.requests, reqs.filter(r => r.id !== pendingDeleteRequestId));
+    pendingDeleteRequestId = null;
+    loadRequests();
+    loadDashboard();
+    toast('تم حذف الرسالة', 'info');
+  } else if (pendingDeleteType === 'all-requests') {
+    save(KEYS.requests, []);
+    loadRequests();
+    loadDashboard();
+    toast('تم حذف جميع الرسائل', 'info');
+  } else if (pendingDeleteType === 'all-works') {
+    save(KEYS.works, []);
+    loadWorks();
+    loadDashboard();
+    toast('تم حذف جميع الأعمال', 'info');
+  }
+  pendingDeleteType = null;
+  closeModal('confirmModal');
+});
+
+document.getElementById('cancelConfirm').addEventListener('click', () => closeModal('confirmModal'));
+document.getElementById('closeConfirmModal').addEventListener('click', () => closeModal('confirmModal'));
+
+/* ============================================================
+   MODAL HELPERS
+   ============================================================ */
+function openModal(id) {
+  document.getElementById(id).classList.add('open');
+}
+
+function closeModal(id) {
+  document.getElementById(id).classList.remove('open');
+}
+
+document.getElementById('closeWorkModal').addEventListener('click', () => closeModal('workModal'));
+document.getElementById('cancelWorkModal').addEventListener('click', () => closeModal('workModal'));
+
+// Close modal on backdrop click
+document.querySelectorAll('.modal-backdrop').forEach(b => {
+  b.addEventListener('click', e => {
+    if (e.target === b) closeModal(b.id);
+  });
+});
+
+/* ============================================================
+   ESCAPE HTML
+   ============================================================ */
+function esc(str) {
+  if (!str) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+</script>
+</body>
+</html>
